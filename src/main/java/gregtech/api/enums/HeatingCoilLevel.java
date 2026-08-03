@@ -34,6 +34,14 @@ public enum HeatingCoilLevel {
     }
 
     /**
+     * @param energyHatchTier the voltage tier of the EBF's energy hatch (LV == 1, MV == 2, ...)
+     * @return the effective heat inside an Electric Blast Furnace, which adds 100K per tier above MV
+     */
+    public long getEBFHeat(int energyHatchTier) {
+        return getHeat() + 100L * (energyHatchTier - 2);
+    }
+
+    /**
      * @return the coil tier, used for discount in the Pyrolyse Oven for example. LV == 0
      */
     public byte getTier() {

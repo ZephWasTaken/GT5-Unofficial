@@ -1,6 +1,7 @@
 package gregtech.common.blocks;
 
 import static com.gtnewhorizon.gtnhlib.util.AnimatedTooltipHandler.translatedText;
+import static com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil.formatNumber;
 import static gregtech.api.enums.HeatingCoilLevel.EV;
 import static gregtech.api.enums.HeatingCoilLevel.HV;
 import static gregtech.api.enums.HeatingCoilLevel.IV;
@@ -21,13 +22,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.World;
 
 import org.jetbrains.annotations.Nullable;
 
+import gregtech.api.enums.GTValues;
 import gregtech.api.enums.HeatingCoilLevel;
 import gregtech.api.enums.ItemList;
 import gregtech.api.enums.Textures;
@@ -59,6 +63,8 @@ public class BlockCasings5 extends BlockCasingsAbstract
 
     public static final Supplier<String> COIL_HEAT_TOOLTIP = translatedText("gt.coilheattooltip");
     public static final Supplier<String> COIL_UNIT_TOOLTIP = translatedText("gt.coilunittooltip");
+    public static final Supplier<String> COIL_SHIFT_HINT_TOOLTIP = translatedText("gt.coilshifthint");
+    public static final Supplier<String> COIL_EBF_HEADER_TOOLTIP = translatedText("gt.coilebfheader");
 
     public BlockCasings5() {
         super(ItemCasings.class, "gt.blockcasings5", MaterialCasings.INSTANCE, 16);
@@ -264,7 +270,28 @@ public class BlockCasings5 extends BlockCasingsAbstract
         int metadata = stack.getItemDamage();
 
         HeatingCoilLevel coilLevel = BlockCasings5.getCoilHeatFromDamage(metadata);
-        tooltip.add(COIL_HEAT_TOOLTIP.get() + coilLevel.getHeat() + COIL_UNIT_TOOLTIP.get());
+        tooltip.add(COIL_HEAT_TOOLTIP.get() + " " + coilLevel.getHeat() + COIL_UNIT_TOOLTIP.get());
+
+        if (!GuiScreen.isShiftKeyDown()) {
+            tooltip.add(COIL_SHIFT_HINT_TOOLTIP.get());
+            return;
+        }
+
+        tooltip.add(COIL_EBF_HEADER_TOOLTIP.get());
+        StringBuilder row = new StringBuilder("  ");
+        for (int tier = 2; tier <= 13; tier++) {
+            row.append(GTValues.TIER_COLORS[tier])
+                .append(GTValues.VN[tier])
+                .append(EnumChatFormatting.GRAY)
+                .append(": ")
+                .append(formatNumber(coilLevel.getEBFHeat(tier)));
+            if ((tier - 1) % 3 == 0) {
+                tooltip.add(row.toString());
+                row = new StringBuilder("  ");
+            } else {
+                row.append("   ");
+            }
+        }
     }
 
     @Override
